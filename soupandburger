@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Slider Before After</title>
+    
+    <style>
+        /* --- TUTAJ WKLEJ CALY SWÓJ CSS Z CODEPEN --- */
+        /* Upewnij się, że linki do zdjęć mają &raw=1 */
+        
+        body { margin: 0; padding: 0; overflow: hidden; }
+        
+        .container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: left center;
+        }
+
+        /* RESET I PODSTAWOWE USTAWIENIA */
+body {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #1a1a1a; /* Ciemne tło strony */
+  font-family: Arial, sans-serif;
+}
+
+/* GŁÓWNY KONTENER SLIDERA */
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 2800px; /* Szerokość Twoich zdjęć */
+  
+  /* Proporcje 2800x1771 - automatyczna wysokość */
+  aspect-ratio: 2800 / 1771; 
+  
+  overflow: hidden;
+  cursor: ew-resize;
+  box-shadow: 0 10px 50px rgba(0,0,0,0.6);
+}
+
+/* WSPÓLNE STYLE DLA WARSTW OBRAZU */
+.image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: left center;
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+/* WARSTWA SPODNIA (STARE ZDJĘCIE - BEFORE) */
+.after {
+  background-image: url('https://dl.dropboxusercontent.com/scl/fi/mgvhfp2fjj6sm3g71u9vx/before.png?rlkey=fckyo6lgj5sl4k94sxlsfvcgo&raw=1');
+  z-index: 1;
+}
+
+/* WARSTWA WIERZCHNIA (NOWE ZDJĘCIE - AFTER) */
+.before {
+  background-image: url('https://dl.dropboxusercontent.com/scl/fi/3afrwhpvzso3y1rsiwekn/after.png?rlkey=tjdipt69k10gmwmsudj4oowfv&raw=1');
+  width: 50%; /* Startowa pozycja suwaka */
+  z-index: 2;
+  /* Cień na krawędzi, żeby odciąć stare od nowego */
+  box-shadow: 3px 0 15px rgba(0,0,0,0.4);
+}
+
+/* PIONOWA BIAŁA LINIA */
+.slider-line {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 2px;
+  background-color: #ffffff;
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* PROSTOKĄTNY UCHWYT ZE STRZAŁKAMI */
+.slider-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  
+  /* Biały prostokąt */
+  width: 12px;       /* Cieńszy prostokąt wygląda lepiej przy wystających strzałkach */
+  height: 60px; 
+  background-color: #ffffff;
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.4);
+  z-index: 11;
+  
+  /* Ważne: pozwala pozycjonować strzałki względem tego boxa */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* Wspólny styl dla obu strzałek */
+.slider-button span {
+  position: absolute;
+  color: #ffffff;    /* Zmieniamy na biały, bo poza boxem lepiej wyglądają białe na tle zdjęć */
+  font-size: 15px;   /* Możesz powiększyć strzałki */
+  text-shadow: 0 0 8px rgba(0,0,0,0.8); /* Cień pod strzałkami, żeby były widoczne na jasnym tle */
+}
+
+/* Lewa strzałka na zewnątrz */
+.arrow-left {
+  right: 20px;       /* Odsuwa strzałkę 25px w lewo od środka */
+}
+
+/* Prawa strzałka na zewnątrz */
+.arrow-right {
+  left: 20px;        /* Odsuwa strzałkę 25px w prawo od środka */
+}
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="slider-container">
+        <div class="image after"></div>
+        <div class="image before" id="before-image"></div>
+        <div class="slider-line" id="line"></div>
+        <div class="slider-button" id="button">
+            <span class="arrow-left">&#9664;</span>
+            <span class="arrow-right">&#9654;</span>
+        </div>
+    </div>
+
+    <script>
+     const container = document.getElementById('slider-container');
+const beforeImg = document.getElementById('before-image');
+const line = document.getElementById('line');
+const button = document.getElementById('button');
+
+function move(e) {
+    let rect = container.getBoundingClientRect();
+    let x;
+
+    // Pobieramy pozycję X względem kontenera
+    if (e.type.includes('touch')) {
+        x = e.touches[0].pageX - rect.left;
+    } else {
+        x = e.pageX - rect.left;
+    }
+
+    // Przeliczamy na procenty
+    let position = (x / rect.width) * 100;
+
+    // Blokada granic (0-100%)
+    if (position < 0) position = 0;
+    if (position > 100) position = 100;
+
+    // Synchronizacja wszystkich elementów
+    // Używamy requestAnimationFrame dla maksymalnej płynności
+    window.requestAnimationFrame(() => {
+        beforeImg.style.width = position + '%';
+        line.style.left = position + '%';
+        button.style.left = position + '%';
+    });
+}
+
+// Obsługa ruchu
+container.addEventListener('mousemove', move);
+container.addEventListener('touchmove', move, { passive: true });
+
+// Opcjonalnie: obsługa kliknięcia (skok suwaka w miejsce kliknięcia)
+container.addEventListener('mousedown', move);
+    </script>
+
+</body>
+</html>
